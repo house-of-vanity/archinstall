@@ -203,6 +203,7 @@ class Partition():
 			return self.path
 		else:
 			for blockdevice in json.loads(b''.join(sys_command('lsblk -J')).decode('UTF-8'))['blockdevices']:
+				print(f"blockdevice: {blockdevice}, self.path: {self.path}")
 				if (parent := self.find_parent_of(blockdevice, os.path.basename(self.path))):
 					return f"/dev/{parent}"
 		#	raise DiskError(f'Could not find appropriate parent for encrypted partition {self}')
