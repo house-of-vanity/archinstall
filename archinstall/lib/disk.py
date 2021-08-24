@@ -85,6 +85,8 @@ class BlockDevice:
 				return drive['back-file']
 		elif self.info['type'] == 'disk':
 			return self.path
+		elif self.info['type'] == 'lvm':
+			return self.path
 		elif self.info['type'][:4] == 'raid':
 			# This should catch /dev/md## raid devices
 			return self.path
@@ -113,6 +115,8 @@ class BlockDevice:
 
 		r = json.loads(o.decode('UTF-8'))
 		if len(r['blockdevices']) and 'children' in r['blockdevices'][0]:
+			if r['blockdevices'][0]["type"] == "lvm":
+				root_path = f"/dev/mapper/{r['blockdevices'][0]['name']}"
 			root_path = f"/dev/{r['blockdevices'][0]['name']}"
 			for part in r['blockdevices'][0]['children']:
 				part_id = part['name'][len(os.path.basename(self.path)):]
@@ -318,7 +322,7 @@ class Partition:
 			path = self.path
 		if allow_formatting is None:
 			allow_formatting = self.allow_formatting
-
+		#path = "/dev/mapper/"
 		# To avoid "unable to open /dev/x: No such file or directory"
 		start_wait = time.time()
 		while pathlib.Path(path).exists() is False and time.time() - start_wait < 10:
